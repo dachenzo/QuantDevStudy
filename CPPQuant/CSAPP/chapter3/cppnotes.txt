@@ -1,0 +1,17 @@
+[[likely]] and [[unlikely]] are compiler hints that help with branch predication
+if (x > 0) [[likely]]{
+
+} else [[unlikely ]]{
+
+}
+
+
+| Aspect              | Array of Structs (AoS)                                        | Struct of Arrays (SoA)                                    |
+| ------------------- | ------------------------------------------------------------- | --------------------------------------------------------- |
+| **Layout**          | `[ {a,b,c}, {a,b,c}, {a,b,c}, … ]`                            | `{ a: [a₀,a₁,a₂,…], b: [b₀,b₁,b₂,…], c: […] }`            |
+| **Cache locality**  | Good for accessing all fields of one item                     | Good for streaming a single field across items            |
+| **Vectorization**   | Poor: fields interleaved, hard to load SIMD registers cleanly | Excellent: each field is contiguous, ideal for SIMD loads |
+| **Prefetch / TLB**  | More TLB entries touched per item, fewer pages at once        | Touches a page only when you walk that specific array     |
+| **Pointer chasing** | Simpler if you always treat whole struct                      | Requires multiple pointers/offsets                        |
+| **Code clarity**    | Natural, matches object‐oriented design                       | Less intuitive, more mechanical                           |
+| **Use case**        | Random access by item (e.g. `process(obj)`)                   | Bulk operations on one field (e.g. `sum(xs)`)             |

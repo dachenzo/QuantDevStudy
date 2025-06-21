@@ -1,0 +1,35 @@
+getaddrinfo translates domain names to ips. The port u pass depends on whether you are the client or server
+
+int getaddrinfo(const char *node,          // e.g. "www.example.com" or IP
+                const char *service,       // e.g. "http" or port number
+                const struct addrinfo *hints,
+                struct addrinfo **res);
+
+
+A socket is an endpoint for communication over a network, it is defined by a 5 tuple:
+<protocol, local IP, local port, remote IP, remote port>
+
+
+
+to create a socket u call soket() and the libc (c std lib) calls the systems socket() on your behalf, the kernel then assigns a new socket descriptor(integer) and returns that to you.
+
+| Layer        | What's happening                        |
+| ------------ | --------------------------------------- |
+| Your code    | `sockfd = socket(...)`                  |
+| libc wrapper | Calls `syscall(SYS_socket, ...)`        |
+| Kernel       | Allocates a `struct socket`, returns FD |
+| You get      | `sockfd = 3` (for example)              |
+
+
+
+when the kernel creates the struct socket, it also creates a struct file
+
+// linux/include/net/sock.h
+struct socket {
+    socket_state          state;         // Socket state: connected, listening, etc.
+    short                 type;          // SOCK_STREAM, SOCK_DGRAM, etc.
+    unsigned long         flags;         // Flags like SOCK_NONBLOCK
+    struct file          *file;          // Pointer to file object
+    struct sock          *sk;            // Pointer to protocol-specific sock (TCP, UDP, etc.)
+    const struct proto_ops *ops;         // Function table (connect, send, recv, etc.)
+};

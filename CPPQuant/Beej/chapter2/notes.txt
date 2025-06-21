@@ -1,0 +1,29 @@
+SOCK_STREAM - uses TCP and SOCK_DGRAM - uses UDP
+
+A layered model more consistent with Unix might be:
+• Application Layer (telnet, ftp, etc.)
+• Host-to-Host Transport Layer (TCP, UDP)
+• Internet Layer (IP and routing)
+• Network Access Layer (Ethernet, wi-fi, or whatever)
+
+
+IPs are divided into the network section and host section
+to get the host section u can use a bit mask
+
+typicallIP: 192.0.2.12/30. The /30 tells u how many network bits present
+
+TCP and UDP use port numbers for their addressing
+
+Network Byte Order =  Big - Edian
+
+
+| Function  | Description           |
+| --------- | --------------------- |
+|  htons()  | Host to Network Short |
+|  htonl()  | Host to Network Long  |
+|  ntohs()  | Network to Host Short |
+|  ntohl()  | Network to Host Long  |
+
+
+
+NAT - Network Address Translation - Usually done by the firewall and is used to switch from public IPs to Private IPs 

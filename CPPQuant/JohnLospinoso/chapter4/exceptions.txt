@@ -1,0 +1,8 @@
+You can mark and should a function as noexcept if u are sure it doesnt throw any excdeptions but u have to be very careful about it
+
+Using the noexcept keyword allows for some optimisations.
+
+
+when an exception is thrown the runtime seeks the closest handler(catch block) to handle the exceptiom. It does this using the unwinder which uses the unwide tables. This is why noexcept is good. Every function has an unwind table unless it is noexcept so using noexcept gives u extra free space.
+
+Never throw an exception in a deconstructor because the runtime will be confused and call std::terminate. Imagine u throw an exception during the unwinding of the call stack objects whose lifetimes have ended need to be destroyed so if they call an exception u end up with two exceptions which breaks ur program

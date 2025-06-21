@@ -1,0 +1,10 @@
+const parameters mean that the object is readonly in that function
+
+marking a method as const means that u promise not to modify the objects state within that method
+int get_year() const{
+    return year;
+}
+
+if u pass a const object to a function, any methods called from the object must also be const
+
+marking a member variable as const means it cant be mmodified after initialization

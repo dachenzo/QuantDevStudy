@@ -1,0 +1,6 @@
+A method declared as virtual can be overrided in a child class and these gives rise o run time polymorphism due to the vtable and vpointer. 
+
+a class with a virtual method with "= 0" cannot be initialised and these methods are called pure virtual methods and must be overrided in child classes
+
+
+Include virtual destructors in destructors, cpp tries to call the method of the pointer type so to make it look at the vtable fro the object u need to mark the base class destructor as virtual.

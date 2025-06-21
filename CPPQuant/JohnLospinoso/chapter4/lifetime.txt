@@ -1,0 +1,17 @@
+In summary, each object passes through the following stages:
+1. The object’s storage duration begins, and storage is allocated.
+2. The object’s constructor is called.
+3. The object’s lifetime begins.
+4. You can use the object in your program.
+5. The object’s lifetime ends.
+6. The object’s destructor is called.
+7. The object’s storage duration ends, and storage is deallocated
+
+An automatic object(one that has automatic storage duration) is allocated at the begining of a code block and deallocated athe the end.
+in a function body the parameters have automatic duration
+
+u can give a variable thread storage duration. by specifying it as thread local
+ static thread_local int power = 200;
+
+In cpp an object is a region of storage that has a name and a type.
+

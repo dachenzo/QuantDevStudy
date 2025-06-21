@@ -1,0 +1,399 @@
+the pc is called %RIP(it indicates the address of the next instruction to be executed)
+
+the isa specifies 16 registers in the integer register file of size 64, RAX, RBX, RCX, .... , R15
+
+Names for the 64bit registers:
+%rax - Return values
+%rbx - Callee saved
+%rcx - 4th argument
+%rdx - 3th argument
+%rsi - 2th argument
+%rdi - 1th argument
+%rbp - callee saved
+%rsp - stack pointer
+%r8  - 5th argument
+%r9  - 6th argument
+%r10 - caller saved
+%r11 - caller saved
+%r12 - callee saved
+%r13 - callee saved
+%r14 - callee saved
+%r15 - callee saved
+
+
+each register can hold 1 2 4 or 8 bytes the names above are for the 8 byte portion but there are names for both 1 2 and 4 byte portions of the registers
+
+
+
+it also specifies RFLAGS, a single register with a set of flag bits eg CF(carry flag), PF(parity flag) and AF(auxillary flag)
+
+a set of vector registers(SIMD) thta can hold one or more integral or floating point values
+
+x86-64 instructions can be from 1 to 15 bytes> typically these in struction are stored in the .text segemtn of the processes virtual address and the pc points to these instrucytions.
+
+
+Intel data Type | Assembly-code suffix
+Byte            | b
+short           | w
+int             | l
+long            | q
+char*           | q
+float           | s
+double          | l
+
+
+see operand specifier for thdifferent methods of memory access. in the meory access types the scale factor s must be 1 2 4 or 8. It is usefule for array indexing when the type is of more than one byte
+
+
+Mov class:
+MOV s, d  means D <-  S, s is an immediate value in memory or a register and d is a register or memory dddress 
+movb   move byte
+movw   move word
+movl   move double word
+movq   move quad word
+
+
+Movs class:
+used for moving from small source to larger destination. important because u have to preserve the sign
+
+| Instruction | Effect                      | Description                               |
+| ----------- | --------------------------- | ----------------------------------------- |
+| `movsbw`    | word ← sign-extended byte   | Byte → Word                               |
+| `movsbl`    | dword ← sign-extended byte  | Byte → Double Word                        |
+| `movswl`    | dword ← sign-extended word  | Word → Double Word                        |
+| `movsbq`    | qword ← sign-extended byte  | Byte → Quad Word                          |
+| `movswq`    | qword ← sign-extended word  | Word → Quad Word                          |
+| `movslq`    | qword ← sign-extended dword | Double Word → Quad Word                   |
+| `cltq`      | `%rax ← sign-extend %eax`   | Special short form of `movslq %eax, %rax` |
+
+
+we also have a Movz class which does a zero extend instead of sign extend
+
+
+
+Push and Pop class:
+pushq S
+    R[%rsp]  ← R[%rsp] - 8      # decrement %rsp by one quadword (8 bytes)
+    M[ R[%rsp] ]  ← S           # store the 8‐byte value S into memory at the new %rsp
+
+popq D
+    D  ← M[ R[%rsp] ]           # load 8 bytes from memory at %rsp into D
+    R[%rsp]  ← R[%rsp] + 8      # increment %rsp by 8
+
+
+STACK DIAGRAM:
+
+High RAM addresses ↑
+---------------------
+|  …             |
+|  local vars    |   ← “stack grows downward” as we push more 
+|  saved regs    |
+|  return addr   |
+|  …             |
+---------------------
+|  0x7fffffffe000 |    ← initial %rsp
+|  (unused)      |
+|  (unused)      |
+|  (unused)      |
+---------------------  lower (newer) addresses
+
+
+
+Arithmetic and Logical Operations:
+| **Instruction** | **Effect**    | **Description**            |            |
+| --------------- | ------------- | -------------------------- | ---------- |
+| `leaq S, D`     | `D ← &S`      | Load effective address     |            |
+
+| `inc D`         | `D ← D + 1`   | Increment                  |            |
+| `dec D`         | `D ← D − 1`   | Decrement                  |            |
+| `neg D`         | `D ← -D`      | Negate                     |            |
+| `not D`         | `D ← ~D`      | Bitwise complement         |            |
+
+The source can be immediate, register or memory but the destination has to be register or memory
+| `add S, D`      | `D ← D + S`   | Addition                   |            | 
+| `sub S, D`      | `D ← D − S`   | Subtraction                |            |
+| `imul S, D`     | `D ← D * S`   | Integer multiplication     |            |
+| `xor S, D`      | `D ← D ^ S`   | Bitwise exclusive OR       |            |
+| `or S, D`       | `D ← D       | S`                        | Bitwise OR |
+| `and S, D`      | `D ← D & S`   | Bitwise AND                |            |
+
+| `sal k, D`      | `D ← D << k`  | Left shift (arithmetic)    |            |
+| `shl k, D`      | `D ← D << k`  | Left shift (same as `sal`) |            |
+| `sar k, D`      | `D ← D >>A k` | Arithmetic right shift     |            |
+| `shr k, D`      | `D ← D >>L k` | Logical right shift        |            |
+
+
+leaq s d: copies the source adreess to d, it doesnt read from the source eg. , if register %rdx contains
+value x, then the instruction leaq 7(%rdx,%rdx,4), %rax will set register %rax
+to 5x + 7. Additionally the destination (d) must be a register ans source (s) must be an address expression
+
+
+sar is for arithmetic right shifts (preserves sign)
+shr is for logical shifts
+
+to use shifts from registers, you have to use use %cl always
+
+
+
+These Instructions produce 128 bit numbers accross to registers RDX(high 64 bits) and RAX(low 64 bits). They are all unary because the source is always multiplied with %rax so u need to load the other operand into rax
+| **Instruction** | **Effect**                                                           | **Description**                                    |
+| --------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
+| `imulq S`       | `R[%rdx]:R[%rax] ← S × R[%rax]`                                      | Signed full multiply                               |
+| `mulq S`        | `R[%rdx]:R[%rax] ← S × R[%rax]`                                      | Unsigned full multiply                             |
+| `cqto`          | `R[%rdx]:R[%rax] ← SignExtend(R[%rax])`                              | Convert to oct word (sign-extend `rax` into `rdx`) |
+| `idivq S`       | `R[%rdx] ← R[%rdx]:R[%rax] mod S`<br>`R[%rax] ← R[%rdx]:R[%rax] ÷ S` | Signed divide                                      |
+| `divq S`        | `R[%rdx] ← R[%rdx]:R[%rax] mod S`<br>`R[%rax] ← R[%rdx]:R[%rax] ÷ S` | Unsigned divide                                    |
+
+theres also div idiv for b w l and always the dividend is in %rax and is always twice size of the divisor
+
+
+cqto is  an instruction that reads the sign bit from %rax and copies it accross %rdx. it is used for sign extending when dviding since the compiler forces 128 bit / 64 bit division for 64 bit / 64 bit
+
+
+Unsigned 64÷64 → 64
+xorq   %rdx, %rdx   ; high 64 bits = 0
+movq   <dividend>, %rax
+divq   <divisor>    ; (RDX:RAX) ÷ divisor → quotient in RAX, remainder in RDX
+
+
+Signed 64÷64 → 64
+movq   <dividend>, %rax
+cqto                ; sign-extend RAX into RDX (so (RDX:RAX) is a signed 128-bit equivalent)
+idivq  <divisor>    ; signed divide → quotient in RAX, remainder in RDX
+
+!!!! in division th e128 bit is %rdx:%rax
+
+
+After every aritmetic and logical op except leaq, the conditional register is set to a flag.
+CF - unsigned overflow
+ZF - zero
+SF - negative
+OF - signed overflow
+
+For logiacal operators like XOr, or . the conditional reg is set to zero. For the shift operations, the carry flag is set to the last bit shifted out, while the overflow flag is set to zero.
+
+
+For S1 and S2 they cant be both memory at the same time or literals at the same time. Any other combo ia allowed
+| **Instruction** | **Based on** | **Description**     |
+| --------------- | ------------ | ------------------- |
+| `cmp S1, S2`    | `S2 − S1`    | Compare             |
+| `cmpb`          | byte         | Compare byte        |  
+| `cmpw`          | word         | Compare word        |
+| `cmpl`          | double word  | Compare double word |
+| `cmpq`          | quad word    | Compare quad word   |
+|                 |              |                     |
+|                 |              |                     |
+| `test S1, S2`   | `S1 & S2`    | Bitwise test        |
+| `testb`         | byte         | Test byte           |
+| `testw`         | word         | Test word           |
+| `testl`         | double word  | Test double word    |
+| `testq`         | quad word    | Test quad word      |
+
+
+
+
+The SETcc family of instructions takes a Boolean test (based on the current RFLAGS) and writes a single‐byte result (0 or 1) into its destination operand D.
+The destination has to be a 1 byte mem location like %ah or a byte somewhere in meory
+
+| Instruction | Condition (sets D = 1 if…)      | Synonym    |
+| ----------- | ------------------------------- | ---------- |
+| `sete D`    | result was zero                 | `setz D`   |
+| `setne D`   | result was nonzero              | `setnz D`  |
+| `sets D`    | result was negative (sign=1)    | —          |
+| `setns D`   | result was nonnegative (sign=0) | —          |
+| `setg D`    | signed greater (a > b)          | `setnle D` |
+| `setge D`   | signed ≥ (a ≥ b)                | `setnl D`  |
+| `setl D`    | signed < (a < b)                | `setnge D` |
+| `setle D`   | signed ≤ (a ≤ b)                | `setng D`  |
+| `seta D`    | unsigned greater (a > b)        | `setnbe D` |
+| `setae D`   | unsigned ≥ (a ≥ b)              | `setnb D`  |
+| `setb D`    | unsigned < (a < b)              | `setnae D` |
+| `setbe D`   | unsigned ≤ (a ≤ b)              | `setna D`  |
+
+
+
+if u say "a < b" in c code, it becomes
+cmpq b a
+because cmp is based on a-b
+When OF = 0:
+If SF = 1 → “a < b.”
+If SF = 0 → “a ≥ b.”
+In that case SF ⊕ 0 = SF, so SF alone works.
+
+When OF = 1:
+If SF = 0 → negative‐overflow → “a < b.”
+If SF = 1 → positive‐overflow → “a > b.”
+
+In both “no‐overflow” and “overflow” scenarios, the condition
+“(SF ⊕ OF) = 1”
+is exactly the same as “signed a < b.”
+
+
+
+
+Jump class
+| Instruction   | Synonym | Jump condition     | Description                 |                             |
+| ------------- | ------- | ------------------ | --------------------------- | --------------------------- |
+| jmp Label     |         | 1                  | Direct jump                 |                             |
+| jmp *Operand  |         | 1                  | Indirect jump               |                             |
+| je Label      | jz      | ZF                 | Equal / zero                |                             |
+| jne Label     | jnz     | ~ZF                | Not equal / not zero        |                             |
+| js Label      |         | SF                 | Negative                    |                             |
+| jns Label     |         | ~SF                | Nonnegative                 |                             |
+| jg Label      | jnle    | ~(SF ^ OF) & ~ZF   | Greater (signed >)          |                             |
+| jge Label     | jnl     | ~(SF ^ OF)         | Greater or equal (signed ≥) |                             |
+| jl Label      | jnge    | SF ^ OF            | Less (signed <)             |                             |
+| jle Label     | jng     | (SF ^ OF)          | ZF                          | Less or equal (signed ≤)    |
+| ja Label      | jnbe    | ~CF & ~ZF          | Above (unsigned >)          |                             |
+| jae Label     | jnb     | ~CF                | Above or equal (unsigned ≥) |                             |
+| jb Label      | jnae    | CF                 | Below (unsigned <)          |                             |
+| jbe Label     | jna     | CF                 | ZF                          | Below or equal (unsigned ≤) |
+
+operand above is a memory encodeing like %rsi, (%rsi) etc.
+
+
+The statement in c:
+if (test-expr)
+    then-statement
+else
+    else-statement
+translates to in asssembly:
+t = test-expr;
+if (!t)
+    goto false;
+then-statement
+goto done;
+false:
+    else-statement
+done:
+
+
+Conditional move class:
+S can be any valid mem source but R has to be a register
+| Instruction | Synonym | Move condition     | Description                 |                             |
+| ----------- | ------- | ------------------ | --------------------------- | --------------------------- |
+| cmove S, R  | cmovz   | ZF                 | Equal / zero                |                             |
+| cmovne S, R | cmovnz  |  ~ZF               | Not equal / not zero        |                             |
+| cmovs S, R  |         | SF                 | Negative                    |                             |
+| cmovns S, R |         |  ~SF               | Nonnegative                 |                             |
+| cmovg S, R  | cmovnle |  ~(SF ^ OF) &  ~ZF | Greater (signed >)          |                             |
+| cmovge S, R | cmovnl  |  ~(SF ^ OF)        | Greater or equal (signed ≥) |                             |
+| cmovl S, R  | cmovnge | SF ^ OF            | Less (signed <)             |                             |
+| cmovle S, R | cmovng  | (SF ^ OF)          | ZF                          | Less or equal (signed ≤)    |
+| cmova S, R  | cmovnbe |  ~CF &  ~ZF        | Above (unsigned >)          |                             |
+| cmovae S, R | cmovnb  |  ~CF               | Above or equal (unsigned ≥) |                             |
+| cmovb S, R  | cmovnae | CF                 | Below (unsigned <)          |                             |
+| cmovbe S, R | cmovna  | CF                 | ZF                          | Below or equal (unsigned ≤) |
+
+
+A jump table is an array where entry i is the address of the code segment implementing the action the program should take
+
+For discussion purposes, suppose procedure P calls procedure Q, and Q then executes and returns back to P. These actions
+involve one or more of the following mechanisms:
+
+    Passing control: The program counter must be set to the starting address of the
+    code for Q upon entry and then set to the instruction in P following the
+    call to Q upon return.
+
+    Passing data: P must be able to provide one or more parameters to Q, and Q must
+    be able to return a value back to P.
+
+    Allocating and deallocating memory: Q may need to allocate space for local
+    variables when it begins and then free that storage before it returns.
+
+
+| Instruction     | Description             |
+| --------------- | ----------------------- |
+| `call Label`    | Procedure call          |
+| `call *Operand` | Indirect procedure call |
+| `ret`           | Return from call        |
+
+When passing control the call instruction pushes the return address of the caller on to the stack before possibly allocating the stack fram for the callee
+
+%rip stores the addrss othe next instruction to execute
+
+
+
+🔧 What Is AVX?
+AVX is a CPU instruction set extension introduced by Intel (and later adopted by AMD).
+
+It enhances vector processing — instead of operating on one float/double at a time, it operates on multiple.
+
+It's an evolution of SSE (Streaming SIMD Extensions).
+
+| Extension   | Register Name  | Width        | Elements (float/double)   |
+| ----------- | -------------- | ------------ | ------------------------- |
+| SSE         | XMM0–XMM15     | 128 bits     | 4 floats / 2 doubles      |
+| AVX         |   YMM0–YMM15   |   256 bits   |   8 floats / 4 doubles    |
+| AVX-512     |   ZMM0–ZMM31   |   512 bits   |   16 floats / 8 doubles   |
+
+
+
+
+M stands for memory while X is register
+| Instruction | Source | Destination | Description                                          |
+| ----------- | ------ | ----------- | ---------------------------------------------------- |
+| `vmovss`    | M32    | X           | Move single-precision scalar from memory to register |
+| `vmovss`    | X      | M32         | Move single-precision scalar from register to memory |
+| `vmovsd`    | M64    | X           | Move double-precision scalar from memory to register |
+| `vmovsd`    | X      | M64         | Move double-precision scalar from register to memory |
+| `vmovaps`   | X      | X           | Move aligned, packed single-precision (128-bit)      |
+| `vmovapd`   | X      | X           | Move aligned, packed double-precision (128-bit)      |
+
+
+float -> Integer
+| Instruction   | Source | Destination | Description                                                            |
+| ------------- | ------ | ----------- | ---------------------------------------------------------------------- |
+| `vcvttss2si`  | X/M32  | R32         | Convert with truncation single precision to 32-bit integer             |
+| `vcvttsd2si`  | X/M64  | R32         | Convert with truncation double precision to 32-bit integer             |
+| `vcvttss2siq` | X/M32  | R64         | Convert with truncation single precision to 64-bit integer (quad word) |
+| `vcvttsd2siq` | X/M64  | R64         | Convert with truncation double precision to 64-bit integer (quad word) |
+
+
+
+Integer -> float
+| Instruction  | Source 1  | Source 2 | Destination | Description                                                  |
+| ------------ | --------- | -------- | ----------- | ------------------------------------------------------------ |
+| `vcvtsi2ss`  | M32 / R32 | XMM      | XMM         | Convert 32-bit integer to single-precision float             |
+| `vcvtsi2sd`  | M32 / R32 | XMM      | XMM         | Convert 32-bit integer to double-precision float             |
+| `vcvtsi2ssq` | M64 / R64 | XMM      | XMM         | Convert 64-bit integer (quad word) to single-precision float |
+| `vcvtsi2sdq` | M64 / R64 | XMM      | XMM         | Convert 64-bit integer (quad word) to double-precision float |
+
+
+
+
+
+
+
+
+
+
+| Single   | Double   | Effect          | Description                |
+| -------- | -------- | --------------- | -------------------------- |
+| `vaddss` | `vaddsd` | D ← S2 + S1     | Floating-point add         |
+| `vsubss` | `vsubsd` | D ← S2 − S1     | Floating-point subtract    |
+| `vmulss` | `vmulsd` | D ← S2 × S1     | Floating-point multiply    |
+| `vdivss` | `vdivsd` | D ← S2 / S1     | Floating-point divide      |
+| `vmaxss` | `vmaxsd` | D ← max(S2, S1) | Floating-point maximum     |
+| `vminss` | `vminsd` | D ← min(S2, S1) | Floating-point minimum     |
+| `sqrtss` | `sqrtsd` | D ← √S1         | Floating-point square root |
+
+
+
+Floating point numbers have to be stored somewhere in memmory since they cant be given asl lietral value like integers
+
+
+Instruction =s for packed data(SIMD)
+
+| Single   | Double   | Effect      | Description          |
+| -------- | -------- | ----------- | -------------------- |
+| `vxorps` | `vxorpd` | D ← S2 ˆ S1 | Bitwise exclusive‐or |
+| `vandps` | `vandpd` | D ← S2 & S1 | Bitwise and          |
+
+
+Floating point comparison
+S2 must be in an XMM register
+| Instruction      | Based on Description              |
+| ---------------- | --------------------------------- |
+| `ucomiss S1, S2` | S2 − S1: Compare single precision |
+| `ucomisd S1, S2` | S2 − S1: Compare double precision |

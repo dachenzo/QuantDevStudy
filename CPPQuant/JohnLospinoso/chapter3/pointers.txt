@@ -1,0 +1,14 @@
+the void * type cant be derreferenced, it cant be used for pointer arithmetic 
+
+nullptr is a literal for pointers that means theres no value. it converts to false
+
+
+| Feature        | Pointer                | Reference                           |
+| -------------- | ---------------------- | ----------------------------------- |
+| Declaration    | `T* p;`                | `T& r = x;`                         |
+| Initialization | Can be uninitialized   | **Must** be initialized immediately |
+| Re-assignment  | `p = &y;` (can reseat) | Cannot reseat after initialization  |
+| Null value     | Can be `nullptr`       | No “null” reference in standard C++ |
+
+
+The reference type is an alias for the original object

@@ -1,0 +1,178 @@
+Buses are electrical conduits that carry fixed size bytes usually called words
+
+L0: Registers
+L1: L1 cache
+L2: L2 cache
+L3: L3 cache
+L4: main memory
+L5: local secondary storage
+L6: external secondary storage
+
+a process is a unit of abstraction created by the os which gives a program the illusion that ist the only thing running ont he whole computer.
+
+Typically u have more processes than the computer can handle so the computer interleaves the instructions between this processes to maintain the illusiion. This process of interleaving is called context switching.
+
+The os keeps track of all state information for a process, such as the PC , register file and contents of the main memory. This is typically called a context. Context swicthing involves saving a context and loading in a different one.
+
+Context sitching is managed by the kernel(Os). The Kernel is also always in memory   
+
+The process is the container for all your program’s resources:
+Its address space (code, heap, globals)
+Open file/socket descriptors
+Signal handlers, permissions, environment, working directory, etc.
+
+The thread is the execution context inside that process:
+Its own CPU registers (PC, SP, general-purpose regs, FP/SIMD state)
+Its own kernel‐mode stack (for system calls/interrupts)
+Its own thread ID and scheduler metadata
+
+The process is “all the stuff I own” (memory, files, namespaces).
+
+The thread is “where execution happens” inside that stuff.
+
+
+Virtual Mememory Layout:
+Kernel Virtual memory
+User stack
+Memmory for shared libraries
+heap
+read/write data
+read only code and data
+
+
+A file is a sequence of bytes and every I/O device is modelled as a file. All reading and writing is done using the Unix I/O
+
+Even networks are considered I/O devices
+
+
+S = 1 / ((1- a) + a/k) - Amdahls's law where a is the fraction of the system being sped up and k is the speed up of that fraction
+
+
+Generally Concurrency refers to the general concept of a system doing multiple things at once
+
+
+Parallelism refers to using concurrency to make a system fatser
+
+Uniprocessor:
+One physical CPU package with a single core.
+
+Multicore CPU:
+One physical package containing two or more independent cores.
+
+Hyper-Threading / SMT:
+Each physical core is split into two (or more) “logical” processors.The OS scheduler sees twice as many CPUs and can schedule two threads on each core simultaneously.
+
+Multiprocessor (SMP) System:
+One system board with multiple CPU packages—each package may itself be multicore + hyper-threaded—sharing memory and I/O under one OS.
+
+Clusters:
+Multiple SMP nodes networked together, each potentially multicore+SMT
+
+
+
+
+The architecture of a cpu core:
+1. Front End (Instruction Fetch & Decode)
+        Instruction Fetch Unit:
+
+        Grabs instructions from the L1 I-cache (or, on a miss, from deeper caches/main memory).
+
+        Often equipped with a branch predictor to guess which way conditional branches will go, so it can keep the pipeline fed.
+
+        Decode / Instruction Queue
+
+        Translates raw machine-code bytes into internal “micro-ops” or “μops.”
+
+        Buffers decoded μops in a queue so the back end can pull them as soon as execution resources are free.
+
+2. Out-of-Order Engine (Reorder Buffer, Reservation Stations)
+Reorder Buffer (ROB):
+
+        Keeps track of μops in flight, allowing the core to retire (commit) them in program order even if they execute out-of-order.
+
+        Reservation Stations / Scheduler:
+
+        Holds μops waiting for their required operands or execution units.
+
+        Register Rename Table:
+
+        Eliminates false dependencies by mapping architectural registers (RAX, RBX, etc.) to a larger pool of physical registers.
+
+3. Execution Units
+        Each core typically includes multiple specialized execution pipelines:
+
+        Unit Type	Function
+        ALUs	Integer arithmetic and logical operations
+        AGUs	Address‐generation units for calculating memory addresses
+        FPUs / SIMD Units	Floating‐point math and vector/SIMD operations (e.g., AVX, SSE)
+        Branch Units	Final branch‐resolution logic, feeding results back to the predictor
+
+        Yes: a core has its own ALU(s) (and usually multiple of them), not shared with other cores.
+
+4. Memory Subsystem (Private & Shared Caches)
+        L1 Caches (Instruction & Data)
+
+        Ultra-low latency, per-core.
+
+        L2 Cache
+
+        Larger, still private to the core.
+
+        L3 Cache (if present)
+
+        Shared among cores on the same chip/package.
+
+5. Retirement / Commit
+        Once μops finish execution and memory/order checks pass, they are retired in program order, updating the visible architectural state (registers, flags, memory).
+
+
+
+When switching between threads all the scheduler does is svae the threads context and load in the registers and counter for the new process.
+
+PROCESS SWITCHING:
+When you switch from running one process to another, you’re fundamentally changing which virtual address space the CPU is using—and that’s where page tables and the TLB come in. Threads of the same process all share the same address space (and therefore the same page tables), but threads in different processes live in different address spaces. Here’s how that plays out:
+
+1. Virtual Memory Basics
+    Page Tables
+
+    The CPU uses a page table (a data structure in RAM) to translate each virtual address (what your code sees) into a physical address (where it actually lives in RAM).
+
+    Every process has its own page-table root (on x86, held in the CR3 register).
+
+    TLB (Translation Lookaside Buffer)
+
+    A small, fast cache inside the CPU that holds recent virtual→physical translations so you don’t have to walk the full page tables on every memory access.
+
+2. Process Switch
+    When the OS switches to a thread in another process:
+
+    Save thread’s registers (as always).
+
+    Load new CR3 with the page-table root for the new process.
+
+    TLB Invalidation or Tag-Change
+
+    Since the TLB contains translations from the old process’s page tables, those entries are no longer valid for the new process’s addresses.
+
+    The CPU either does a full TLB flush or uses tagged TLB entries (if the architecture supports it) to avoid mixing translations.
+
+    Restore new thread’s registers, resume execution.
+
+    Why the extra work?
+    Because if you didn’t reload CR3 and flush the TLB, your new thread might read or write memory through stale mappings—either crashing or corrupting another process’s data!
+
+3. Thread Switch (Same Process)
+    When switching between threads within the same process:
+
+    CR3 stays exactly the same, so the virtual-to-physical mapping is preserved.
+
+    TLB entries remain valid, because both threads speak the same virtual address language.
+
+    You only have to save/restore the thread’s registers (and maybe its stack pointer and program counter).
+
+    Result: A lighter, faster context switch—no costly page-table walk or TLB flush needed.
+
+4. Why It Matters
+    Process Isolation: Different processes can’t accidentally (or maliciously) touch each other’s memory, because the CPU enforces separate page tables.
+
+    Performance: Threads in the same process share TLB entries and rarely require a full TLB flush, so switching threads is cheaper than switching processes.

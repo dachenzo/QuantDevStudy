@@ -1,0 +1,35 @@
+The in type is signed by default and can be unsigned
+unsigned int n = 10;
+
+in the <cstdint> there are int variations that give a specific size, like int8_t, int16_t. These are useful for memory bound tasks because u can store most numbers on the cache
+
+SIMD is a single instruction that operates on a vector(small array of data elemnents) . This is useful because modern computers have up to 512-bit registers.
+
+Vectorisation is the process by which a compiler (or programmer via intrinsics) transforms scalar operations in your code into SIMD operations.
+
+A simple loop that adds two arrays element-wise:
+
+for (int i = 0; i < N; i++) {
+    C[i] = A[i] + B[i];
+}
+A vectorising compiler can turn this into a handful of SIMD loads, adds, and stores, processing 4, 8, or more elements per instruction instead of one at a time.
+
+U can use suffixes for int literals:
+42u -- unsigned
+272ul - unsigned long
+64793ll -- long long
+
+For example, the integer literal 112114 could be an
+int, a long, or a long long. Since an int can store 112114, the resulting integer
+literal is an int.(C++ always picks the smallest type that fits)
+
+std::byte is a type that allows u to perform bitwise operations safefly  on raw bytes instead of using other types like char, unsigned char etc. Its is avaliable in <cstddef>.
+
+s. The size_t objects guarantee that their maximum values are sufficient to represent the maximum size in bytes of all objects. Technically,
+this means a size_t could take 2 bytes or 200 bytes depending on the implementation. In practice, it’s usually identical to an unsigned long long on 64-bit
+architectures.
+
+
+sizeof is a unary operand that takes a type and return its size in bytes. It returns size_t.
+
+wide casting is safe. narrowing is unsafe

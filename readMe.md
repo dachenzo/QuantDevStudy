@@ -1,0 +1,1 @@
+A log for my self guided journey into quantittative development and low latency systems

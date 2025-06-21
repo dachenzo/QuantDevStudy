@@ -1,0 +1,34 @@
+User definde types are broadly:
+Enumerations
+Classes
+Unions
+
+
+Enums are either scoped or unscoped.
+
+
+UNSCOPED::
+enum Color { Red, Green, Blue };
+enum Traffic { Red, Yellow, Green };
+
+Color c = Red;         // OK
+Traffic t = Red;       // OK
+int x = Green;         // OK (implicit conversion!)
+
+
+SCOPED::
+enum class Color { Red, Green, Blue };
+enum class Traffic { Red, Yellow, Green };
+
+Color c = Color::Red;       // OK
+Traffic t = Traffic::Red;   // OK
+// Color c2 = Red;          // Error: ‘Red’ not in this scope
+// int x = Color::Green;    // Error: no implicit conversion
+
+
+
+Structs are classes and they are the most basic.
+Generally structs are linear in memory so u should always irder them from biggest to smallest.
+
+
+In a struct members are public by default

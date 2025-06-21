@@ -1,0 +1,8 @@
+An lvalue is anything that has a name while an rvalue is anthing that isnt an lvalue
+
+rvalue parameters are specified with &&
+lvalue parameters are specified with &
+
+std::move casts an lvalue to an rvalue.its should be thought of as std::rvalue
+
+whne an object is a moved state (i.e its an rvalue). I can either be destroyed or reassigned

@@ -1,0 +1,49 @@
+when using gcc u can use the "Og" command to specify a minimal level of optimisation, u can also use O1 and O2 for higher and more aggressive optimisations
+
+Every CPU has its own ISA(instruction set architecture)
+
+the memory addresses in machine level programs are actually virtual addresses
+
+the CR3 register points to the root of the current processes page table
+TlB is a tiny cache that remebers recent VA -> PA translations
+Page-Table Walk -- On a TLB miss, the CPU hardware—or, on some architectures, microcode—traverses the page tables (multi-level arrays) in RAM to find the PA, then caches it in the TLB.
+
+
+Typically compilers emit a NOP to allign in structions to 16 or 32 (generally powers of two) because cpus fetch instructions often in chunks so alligning ur instruction address to numbers divisible by 16 or 32 improve chances of ur cpu only performing one fetch      
+
+
+Each new thread in a process has its own stack
+
+
+Mordern processors use pipelines to improve performance but if u use control transfer or conditional moves, the cpu doesnt know which branch to process so they end up predicting (branch predication)
+if its the wrong the cpu has to clear the pipeline and refill it which takes 15-30 clock cycles(poor performances)
+
+
+Reasons for cache miss:
+i) Cumpolsory - first time accessing data (cold start)
+ii) capacity - small cache size cant store all the data
+iii) conflict - innefective cache management strategy
+
+Every memory address (let’s say a 48‐bit physical address) can be thought of in three parts:
+
+Offset (lower 6 bits):
+
+Since each cache line is 64 bytes, its size = 2⁶ B. That means the low 6 bits of any address tell you exactly which byte within a 64 B block you want.
+For example, if your address in binary ends in …010110 (22 decimal), that means “byte 22 within that line.”
+None of the cache lookup needs the offset beyond selecting the right byte in the line once it’s fetched.
+
+Index (next N bits):
+Each cache (L1, L2, L3) is divided into a certain number of “sets,” and each set holds a handful of lines (the associativity). For instance, L1 might be 32 KiB total, 64 B/line → 512 lines; if it’s 8-way associative, there are 512/8 = 64 sets.
+To pick which set to look in, the cache controller grabs the next log₂(number_of_sets) bits from the address. If there are 64 sets, that’s 6 bits. Those 6 bits tell the hardware “go check set X in L1.” All 8 ways in that set are candidates.
+
+Tag (all remaining high bits):
+The rest of the bits in the physical address (above offset+index) form the “tag.”
+When the CPU checks set X, it compares that tag against the stored tag in each of the up to 8 ways. If one matches and the valid bit is set, you have a cache hit in that way. If none match, it’s a miss, and you have to go look in L2 (or L3, or DRAM).
+   
+
+
+
+Mordern cpu's typically have a an I cache(instruction) and D cache (data) at the L1 level and L2, L3 tend to be unified. 
+
+
+  
