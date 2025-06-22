@@ -33,3 +33,30 @@ struct socket {
     struct sock          *sk;            // Pointer to protocol-specific sock (TCP, UDP, etc.)
     const struct proto_ops *ops;         // Function table (connect, send, recv, etc.)
 };
+
+
+when using sendto(), a single call translates to a single packet (datagram). If you try to send more than the newtwork's MTU(Maximum Transmission Unit), the IP layer either fragments(bad performance) it or it fails
+
+2. TCP: byte-stream ⇒ many segments ⇒ many packets
+Stream semantics:
+    You call send(fd, buf, len, 0), the kernel just appends those len bytes into the socket’s send buffer. No notion of your “message” size survives beyond the socket API. Two successive send() calls may be coalesced into one TCP segment, or one large send() may be split across multiple segments.
+
+Segmentation & MSS:
+    The kernel breaks your stream up into TCP segments, each up to the MSS (maximum segment size).
+    MSS is typically MTU minus IP/TCP headers: on Ethernet, MSS ≈ 1500 − 20 − 20 = 1460 bytes.
+
+When packets go on-the-wire:
+    Nagle’s algorithm may delay small writes to coalesce them into fewer, larger segments.
+    TCP_NODELAY disables Nagle so each send() can immediately turn into a segment (but still capped by MSS).
+    Once a segment is formed, it’s handed to the IP layer, which wraps it in an IP packet, then to the NIC driver, which wraps it in an Ethernet frame.
+
+
+3. So—where do “packets” come in?
+At the API level you never see “packet boundaries” for TCP sockets. You just read/write bytes.
+
+At the transport layer the kernel slices and dices your byte-stream into TCP segments or UDP datagrams.
+
+At the network layer each segment/datagram becomes an IP packet.
+
+At the link layer that IP packet becomes an Ethernet frame (or whatever your NIC uses).
+
