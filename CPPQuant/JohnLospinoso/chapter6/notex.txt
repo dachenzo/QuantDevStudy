@@ -1,0 +1,6 @@
+const_cast only works on reference types and pointers - its used to remove const from existing const pointers and references, technically, it returns a new non const type, so the original is still const.
+
+
+static_cast basically formalises casts that were implicitly allowed before
+
+U can replace argument types with concepts
