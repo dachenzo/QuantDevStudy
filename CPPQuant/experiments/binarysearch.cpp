@@ -12,9 +12,8 @@ concept BinarySearchable =
     };
 
 
-template<BinarySearchable T, typename P>
-requires std::invocable<P, T>
-T& binarySearch(std::vector<T>& arr, P pred) {
+template<BinarySearchable T,typename P, std::invocable<P, T>>
+T& binarySearch(std::vector<T>& arr, P pred, T& target, T* result) {
     size_t left = 0;
     size_t right = arr.size();
     
@@ -33,3 +32,14 @@ T& binarySearch(std::vector<T>& arr, P pred) {
 
 
 int main() {}
+
+
+
+
+template<std::size_t Index, typename T, std::size_t Length>
+constexpr T& get(T (&arr)[Length])               // Index is part of the type
+{
+    static_assert(Index < Length and Index > -1, "Out-of-bounds access");
+    
+    return arr[Index];
+}
