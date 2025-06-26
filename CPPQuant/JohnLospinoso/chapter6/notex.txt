@@ -4,3 +4,10 @@ const_cast only works on reference types and pointers - its used to remove const
 static_cast basically formalises casts that were implicitly allowed before
 
 U can replace argument types with concepts
+
+Variadic templates allow u to define a list of params (zero or more)
+syntax: template<typename T, typename... Arguments>
+        T& func(Arguments... args) {
+            return new T{args}
+        }
+        
