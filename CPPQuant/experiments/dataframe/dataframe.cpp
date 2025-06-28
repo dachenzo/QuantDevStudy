@@ -13,7 +13,7 @@ struct DataFrame {
     DataFrame() {}
 
     DataFrame(FileType type, std::string location) {
-        
+
     }
 
     template<typename K>
@@ -40,12 +40,6 @@ struct DataFrame {
 
         return static_cast<Column<K>*>(base)->as_span();
     }
-
-
-
-
-
-
     
     private:
     std::unordered_map<std::string, std::unique_ptr<BaseColumn*>> columns;
