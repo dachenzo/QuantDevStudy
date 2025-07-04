@@ -4,7 +4,8 @@
 
 
 int main() {
-    parseCSV<int, std::string, double>("test_csv.csv", false);
+    tupleofColumns<int, std::string, double> cols;
+    parseCSV<int, std::string, double>(cols, "test_csv.csv", false);
 
     std::string tst{"1,peeop,jamie"};
     std::cout << getColumnCount(tst);

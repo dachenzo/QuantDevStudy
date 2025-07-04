@@ -62,8 +62,11 @@ void printCsv(std::tuple<std::vector<Ts>...>& columns,
 
 template< typename ...Ts>
 using tupleofColumns = std::tuple<std::vector<Ts>...>;
+
+
+
 template< typename ...Ts>
-void parseCSV(std::string path, bool headers) {
+void parseCSV(tupleofColumns<Ts...>& columns, std::string path, bool headers) {
     std::ifstream file{path};
     if (!file.is_open()) {
         std::cerr << "Could not open file!\n";
@@ -77,8 +80,7 @@ void parseCSV(std::string path, bool headers) {
         rowIdx += 1;
     }
 
-    auto columns = tupleofColumns<Ts...>{};
-    constexpr std::size_t colCount = std::tuple_size_v<decltype(columns)>;
+    constexpr std::size_t colCount = sizeof...(Ts);
 
     std::string line{};
 
@@ -94,7 +96,7 @@ void parseCSV(std::string path, bool headers) {
 
 
     }
-    printCsv(columns, std::make_index_sequence<colCount>{});
+    // printCsv(columns, std::make_index_sequence<colCount>{});
 
 }
 
